@@ -51,6 +51,13 @@ class Version implements \JsonSerializable
         return $this;
     }
 
+    public function setProject($projectName)
+    {
+        $this->project = $projectName;
+
+        return $this;
+    }
+
     public function setName($name)
     {
         $this->name = $name;
