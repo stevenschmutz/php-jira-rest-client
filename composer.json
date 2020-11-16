@@ -1,5 +1,5 @@
 {
-    "name": "lesstif/php-jira-rest-client",
+    "name": "stevenschmutz/php-jira-rest-client",
     "description": "JIRA REST API Client for PHP Users.",
     "type": "library",
     "keywords": ["jira", "rest", "jira-php", "jira-rest"],
@@ -19,6 +19,10 @@
     },
     "license": "Apache-2.0",
     "authors": [
+        {
+            "name": "Steven Schmutz",
+            "email": "steven@prexence.co.za"
+        }, 
         {
             "name": "KwangSeob Jeong",
             "email": "lesstif@gmail.com",
