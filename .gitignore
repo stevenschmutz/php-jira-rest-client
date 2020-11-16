@@ -33,3 +33,4 @@ Vagrantfile
 # Ignore scotch.io box and the folders of them
 public/
 storage/
+src/.DS_Store
