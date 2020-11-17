@@ -54,14 +54,24 @@ class SprintService extends JiraClient
      */
     public function getSprint(string $sprintId)
     {
+
+    try {
+
         $ret = $this->exec($this->uri.'/'.$sprintId, null);
-
         $this->log->info("Result=\n".$ret);
+        
+        if(is_null($ret)) {
+            return false;
+        }
 
-        return $sprint = $this->json_mapper->map(
-            json_decode($ret),
-            new Sprint()
+        $sprint = $this->json_mapper->map(
+            json_decode($ret), new Sprint()
         );
+    
+        return $sprint;
+    } catch (JiraRestApi\JiraException $e) {
+       $this->log->error("Error Occured! " . $e->getMessage());
+    }
     }
 
     /**
@@ -75,14 +85,58 @@ class SprintService extends JiraClient
      */
     public function getSprintIssues($sprintId, $paramArray = [])
     {
-        $json = $this->exec($this->uri.'/'.$sprintId.'/issue'.$this->toHttpQueryParameter($paramArray), null);
-
-        $issues = $this->json_mapper->mapArray(
+    
+        try {
+            $json = $this->exec($this->uri.'/'.$sprintId.'/issue'.$this->toHttpQueryParameter($paramArray), null);
+            $issues = $this->json_mapper->mapArray(
             json_decode($json)->issues,
-            new \ArrayObject(),
-            Issue::class
-        );
+                new \ArrayObject(),
+                Issue::class
+            );
 
-        return $issues;
+            return $issues;
+        
+        } catch (JiraException $e) {
+			$this->log->error("Error Occured! " . $e->getMessage());
+			return FALSE;
+	}
+        
     }
+
+
+    public function returnSprintsForBoard($boardID)
+    {
+        //GET /rest/agile/1.0/board/{boardId}/sprint
+        $json = $this->exec($this->uri.'/board/'.$boardID.'/sprint', null);
+        $sprints = json_decode($json);
+        return $sprints;
+    }
+
+    public function addIssueToSprint($sprintId, $issueArray) 
+    {
+
+        $postData = json_encode([
+            'issues' => $issueArray,
+        ], JSON_UNESCAPED_UNICODE);
+
+        $this->log->info("Issue to add=\n".$postData);
+        $ret = $this->exec($this->uri."/$sprintId/issue/", $postData, 'POST');
+        
+        return json_decode($ret);    
+    } 
+
+    public function createSprint($sprintName, $boardID) 
+    {
+
+        $postData = json_encode([
+            'name' => $sprintName,
+            'originBoardId'=> (int)$boardID
+        ], JSON_NUMERIC_CHECK);
+        $ret = $this->exec($this->uri, $postData, 'POST');
+
+        return $sprint = $this->json_mapper->map(
+            json_decode($ret), new Sprint()
+        );
+    
+    } 
 }

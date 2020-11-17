@@ -109,13 +109,23 @@ class BoardService extends \JiraRestApi\JiraClient
     public function getBoardSprints($boardId, $paramArray = []): ?\ArrayObject
     {
         $json = $this->exec($this->uri.'/'.$boardId.'/sprint'.$this->toHttpQueryParameter($paramArray), null);
+        
+	try {
 
-        try {
-            return $this->json_mapper->mapArray(
-                json_decode($json, false, 512, $this->getJsonOptions())->values,
-                new \ArrayObject(),
-                Sprint::class
-            );
+		$sprintArray = json_decode($json,True);
+  	      	$returnDetails = [
+  	          'maxResults'=>$sprintArray['maxResults'], 
+   	         'startAt' => $sprintArray['startAt'],
+  	          'isLast' => $sprintArray['isLast']
+ 	       ];
+  	      $this->log->debug(print_r($returnDetails,True));
+  	      $sprints = $this->json_mapper->mapArray(
+ 	           json_decode($json)->values,
+  	          new \ArrayObject(),
+  	          Sprint::class
+  	      );
+    	    return [$returnDetails,$sprints];
+
         } catch (\JsonException $exception) {
             $this->log->error("Response cannot be decoded from json\nException: {$exception->getMessage()}");
 

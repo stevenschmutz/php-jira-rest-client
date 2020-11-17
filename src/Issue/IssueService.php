@@ -67,14 +67,20 @@ class IssueService extends \JiraRestApi\JiraClient
      *
      * @return Issue created issue key
      */
-    public function create($issueField)
+    public function create($issueField, $bMustForceNumeric = False)
     {
         $issue = new Issue();
 
         // serilize only not null field.
         $issue->fields = $issueField;
 
-        $data = json_encode($issue);
+        if ( $bMustForceNumeric) {
+            $this->log->debug("About to convert to JSON with numeric check");
+            $data = json_encode($issue, JSON_NUMERIC_CHECK );
+        } else {
+            $this->log->debug("About to convert to JSON without numeric check");
+            $data = json_encode($issue ); 
+        }
 
         $this->log->info("Create Issue=\n".$data);
 

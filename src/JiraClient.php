@@ -2,11 +2,13 @@
 
 namespace JiraRestApi;
 
+use JiraRestApi\JiraException;
 use JiraRestApi\Configuration\ConfigurationInterface;
 use JiraRestApi\Configuration\DotEnvConfiguration;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger as Logger;
 use Psr\Log\LoggerInterface;
+use APIAccounting;
 
 /**
  * Interact jira server with REST API.
@@ -203,6 +205,9 @@ class JiraClient
      */
     public function exec($context, $post_data = null, $custom_request = null, $cookieFile = null)
     {
+
+        try {
+        
         $url = $this->createUrlByContext($context);
 
         if (is_string($post_data)) {
@@ -273,7 +278,8 @@ class JiraClient
 
         $this->log->debug('Curl exec='.$url);
         $response = curl_exec($ch);
-
+        $resultMetaArray = curl_getinfo($ch);
+        
         // if request failed or have no result.
         if (!$response) {
             $this->http_response = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -299,13 +305,38 @@ class JiraClient
 
             // don't check 301, 302 because setting CURLOPT_FOLLOWLOCATION
             if ($this->http_response != 200 && $this->http_response != 201) {
+            
                 throw new JiraException('CURL HTTP Request Failed: Status Code : '
                     .$this->http_response.', URL:'.$url
                     ."\nError Message : ".$response, $this->http_response);
-            }
+             }
         }
 
+        //Update accounting
+        APIAccounting\APIAccounting::updateBilling
+                (
+                    $this->configuration->jira4mixUser, 
+                    'JIRA',
+                    $url, 
+                    $resultMetaArray['size_download'], 
+                    $resultMetaArray['size_upload'], 
+                    date('c'), 
+                    $resultMetaArray['total_time'], 
+                    $resultMetaArray['http_code'],
+                    '-9',
+                    'n/a',
+                    json_encode($post_data, JSON_UNESCAPED_UNICODE)
+
+                );
+ 
+
         return $response;
+
+        } catch (JiraException $e) {
+            $this->log->error("Error Occured! " . $e->getMessage());
+            return null;
+        }
+
     }
 
     /**
