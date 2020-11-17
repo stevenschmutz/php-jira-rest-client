@@ -34,3 +34,4 @@ Vagrantfile
 public/
 storage/
 src/.DS_Store
+.DS_Store
