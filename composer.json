@@ -16,7 +16,7 @@
         "netresearch/jsonmapper": "^2.0",
         "monolog/monolog": "~1.12|^2.0",
         "vlucas/phpdotenv": "^4.0|^5.0",
-        "stevenschmutz/api-accounting":"0.9"
+        "stevenschmutz/api-accounting":"1.0.0"
     },
     "require-dev": {
         "phpunit/phpunit": ">=5.7 <6",
